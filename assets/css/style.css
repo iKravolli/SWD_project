@@ -7,7 +7,7 @@
 
 /* page base */
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Inter", "Segoe UI", Arial, Helvetica, sans-serif;
     background: #f7f7f5;
     color: #202124;
     min-height: 100vh;
@@ -38,6 +38,7 @@ a {
     color: #111111;
 }
 
+/* navigation */
 .nav {
     display: flex;
     align-items: center;
@@ -45,13 +46,27 @@ a {
     font-size: 14px;
 }
 
-.nav a {
+.nav a,
+.nav-link {
     color: #444444;
     font-weight: 500;
+    transition: color 0.2s ease, background 0.2s ease;
 }
 
-.nav a:hover {
+.nav a:hover,
+.nav-link:hover {
     color: #111111;
+}
+
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+
+.nav-link:hover {
+    background: #f1f1ee;
 }
 
 .user-pill {
@@ -210,6 +225,7 @@ a {
 
 /* buttons */
 .btn-primary,
+.btn-action,
 .btn-secondary,
 .btn-danger,
 .btn-small {
@@ -222,16 +238,20 @@ a {
     padding: 11px 16px;
     font-weight: 600;
     font-size: 14px;
-    transition: 0.2s ease;
+    font-family: inherit;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
-.btn-primary {
+.btn-primary,
+.btn-action {
     background: #202124;
     color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-action:hover {
     background: #000000;
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -258,6 +278,54 @@ a {
     background: #202124;
     color: white !important;
     padding: 8px 12px;
+}
+
+/* tables */
+.main-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border: 1px solid #deded8;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+.main-table th,
+.main-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e7e7e2;
+    vertical-align: middle;
+}
+
+.main-table th {
+    background: #f1f1ee;
+    color: #333333;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.main-table td {
+    color: #444444;
+}
+
+.main-table tr:last-child td {
+    border-bottom: none;
+}
+
+.main-table tbody tr:hover {
+    background: #fafaf8;
+}
+
+/* table wrapper for mobile */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background: #ffffff;
+    border-radius: 8px;
 }
 
 /* details page */
@@ -310,20 +378,32 @@ a {
 }
 
 /* forms */
-.form-card {
+.form-card,
+.entry-form {
     display: flex;
     flex-direction: column;
     gap: 14px;
+    background: #ffffff;
 }
 
-.form-card label {
+.entry-form {
+    padding: 22px;
+    border: 1px solid #deded8;
+    border-radius: 8px;
+}
+
+.form-card label,
+.entry-form label {
     font-weight: 600;
     color: #444444;
 }
 
 .form-card input,
 .form-card textarea,
-.form-card select {
+.form-card select,
+.entry-form input,
+.entry-form textarea,
+.entry-form select {
     width: 100%;
     border: 1px solid #d7d7d2;
     padding: 12px 14px;
@@ -331,15 +411,22 @@ a {
     font-size: 15px;
     outline: none;
     font-family: inherit;
+    background: #ffffff;
+    color: #202124;
 }
 
-.form-card textarea {
+.form-card textarea,
+.entry-form textarea {
     resize: vertical;
+    min-height: 110px;
 }
 
 .form-card input:focus,
 .form-card textarea:focus,
-.form-card select:focus {
+.form-card select:focus,
+.entry-form input:focus,
+.entry-form textarea:focus,
+.entry-form select:focus {
     border-color: #111111;
 }
 
@@ -437,5 +524,13 @@ a {
     .page {
         width: min(100% - 22px, 1180px);
         padding-top: 24px;
+    }
+
+    .main-table {
+        min-width: 620px;
+    }
+
+    .entry-form {
+        padding: 18px;
     }
 }
