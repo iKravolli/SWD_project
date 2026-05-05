@@ -6,21 +6,21 @@ $errors = []; // Array to store validation errors
 // Only run this code if the user clicks the Register button
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // Get and Sanitize data [converts user typed text into plain text to prevent malicious sql commands]
-    $email = mysqli_real_escape_string($conn, trim($_POST['email'])); // trim cuts off accidental spaces typed by user
+    // 1. get data from user and Sanitize it
+    $email = mysqli_real_escape_string($conn, trim($_POST['email'])); 
     $password = $_POST['password']; 
     
-    // SERVER-SIDE VALIDATION
+    // 2. SERVER-SIDE VALIDATION
     
-    // check if email is a valid format
+    // Check if email is a valid format
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Please enter a valid email address.";
     }
 
-    // Check password length
-    if (strlen($password) < 6) {
-        $errors[] = "Password must be at least 6 characters long.";
-    }
+ // Check for: 1 Uppercase, 1 Lowercase, 1 Number, 1 Special Char, and Min 8 length
+if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', $password)) {
+    $errors[] = "Password must be at least 8 characters long and include an uppercase letter, lowercase letter, a number, and a special character.";
+}
 
     // Check if the email already exists in the database
     $check_query = "SELECT id FROM users WHERE email = '$email' LIMIT 1";
@@ -29,12 +29,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "This email is already registered. Please login or use a different email.";
     }
 
-    // 3. Only Insert if there are no errors
+    // This turns "password123" into a 60-character secure hash.
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+    // 4. Only Insert if there are no errors
     if (empty($errors)) {
         $role = 'Attendee'; 
-        $sql = "INSERT INTO users (email, password, role) VALUES ('$email', '$password', '$role')";
+        $sql = "INSERT INTO users (email, password, role) VALUES ('$email', '$hashed_password', '$role')";
 
         if (mysqli_query($conn, $sql)) {
+            // Redirect to login with a success message
             header("Location: login.php?msg=registered");
             exit();
         } else {
@@ -45,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Sign Up - Workshop Portal</title>
@@ -56,6 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <header class="site-header">
     <div class="logo">Workshop Portal</div>
     <nav class="nav">
+        <a href="welcome_page.php" class="nav-link">Home</a>
         <a href="login.php" class="nav-link">Login</a>
     </nav>
 </header>
@@ -69,13 +74,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="table-wrapper" style="padding: 40px; max-width: 500px; margin: 20px auto;">
         
-        <!-- 4. DISPLAY ERRORS TO USER -->
+        <!-- DISPLAY ERRORS TO USER -->
         <?php if (!empty($errors)): ?>
             <div class="notice" style="color: #d9534f; background: #f9f2f2; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ebccd1;">
                 <strong>Registration Issues:</strong>
                 <ul style="margin-top: 10px; margin-left: 20px;">
                     <?php foreach ($errors as $error): ?>
-                        <li><?php echo $error; ?></li>
+                        <li><?php echo htmlspecialchars($error); ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
@@ -90,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div style="margin-bottom: 20px;">
                 <label>Password</label><br>
                 <input type="password" name="password" style="width: 100%; padding: 8px; margin-top: 5px;" required>
-                <small style="color: #666;">Minimum 6 characters.</small>
+                <small style="color: #666;">min 8 characters - uppercase, lowercase, special character, number</small>
             </div>
             
             <button type="submit" class="btn-primary" style="width: 100%; border: none; cursor: pointer;">Register</button>

@@ -1,33 +1,37 @@
 <?php
 /**
- *  SESSION INITIALIZATION
+ * SESSION INITIALIZATION
  * session_start() is required as it gives the user a digital wristband so the server remembers 
-* who they are and what their role is as they move between different pages.
+ * who they are and what their role is as they move between different pages.
  */
 include 'includes/db.php';
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     /**
-     * INPUT SANITIZATION [secuirty]
+     * INPUT SANITIZATION
      * mysqli_real_escape_string() cleans the user input to prevent SQL Injection attacks.
      */
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $password = $_POST['password'];
 
     /**
-     * DATABASE AUTHENTICATION
-     * We check the mysql database to verify if the provided credentials match a stored user record
+     * DATABASE AUTHENTICATION (SECURE VERSION)
+     * We fetch the user by email first. We can no longer check the password in the SQL string
+     * because it is stored as a secure hash, not plain text.
      */
-    $sql = "SELECT * FROM users WHERE email = '$email' AND password = '$password'";
+    $sql = "SELECT * FROM users WHERE email = '$email' LIMIT 1";
     $result = mysqli_query($conn, $sql);
     $user = mysqli_fetch_assoc($result);
 
-    if ($user) {
+    /**
+     * PASSWORD VERIFICATION
+     * password_verify() takes the plain text input and checks it against the hash in the DB.
+     */
+    if ($user && password_verify($password, $user['password'])) {
         /**
          * SETTING SESSION STATE
-         * If the user is found, we store their ID and Role in a session.
-         * This allows other pages to check who is logged in and what they are allowed to see.
+         * If the password matches the hash, we store their ID and Role in a session
          */
         $_SESSION['user_id'] = $user['id']; 
         $_SESSION['email'] = $user['email'];
@@ -39,7 +43,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         /**
          * SERVER-SIDE VALIDATION & FEEDBACK
-         * If the credentials don't match, we provide appropriate feedback to the user.
          */
         $error = "Invalid email or password.";
     }
@@ -47,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Login - Workshop Portal</title>
@@ -58,6 +61,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <header class="site-header">
     <div class="logo">Workshop Portal</div>
     <nav class="nav">
+        <!-- Home link added for navigation flow -->
+        <a href="welcome_page.php" class="nav-link">Home</a>
         <a href="register.php" class="nav-link">Create Account</a>
     </nav>
 </header>
@@ -70,14 +75,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </section>
 
     <div class="table-wrapper" style="padding: 40px; max-width: 500px; margin: 20px auto;">
-        <!-- DISPLAYING ERROR MESSAGES -->
-        <?php if(isset($error)): ?>
-            <div class="notice" style="color: #d9534f; background: #f9f2f2; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
-                <?php echo $error; ?>
+        
+        <!-- Successful Registration Message -->
+        <?php if(isset($_GET['msg']) && $_GET['msg'] == 'registered'): ?>
+            <div class="notice" style="color: #3c763d; background: #dff0d8; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #d6e9c6;">
+                Registration successful! Please login below.
             </div>
         <?php endif; ?>
 
-        <!--  Login Form -->
+        <!-- DISPLAYING ERROR MESSAGES -->
+        <?php if(isset($error)): ?>
+            <div class="notice" style="color: #d9534f; background: #f9f2f2; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ebccd1;">
+                <?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Login Form -->
         <form method="POST" action="login.php">
             <div style="margin-bottom: 15px;">
                 <label>Email Address</label><br>
